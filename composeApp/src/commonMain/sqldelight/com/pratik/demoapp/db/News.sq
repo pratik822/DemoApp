@@ -1,0 +1,41 @@
+CREATE TABLE News(
+    category TEXT NOT NULL,
+    name TEXT NOT NULL,
+    author TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    url TEXT NOT NULL PRIMARY KEY,
+    urlToImage TEXT NOT NULL,
+    publishedAt TEXT NOT NULL
+);
+
+insertNews:
+INSERT INTO News(
+    category,
+    name,
+    author,
+    title,
+    description,
+    url,
+    urlToImage,
+    publishedAt
+)
+VALUES (
+    :category,
+    :name,
+    :author,
+    :title,
+    :description,
+    :url,
+    :urlToImage,
+    :publishedAt
+);
+
+getAllNews:
+SELECT * FROM News;
+
+getAllNewsByCategory:
+SELECT * FROM News WHERE category = :category;
+
+deleteAllNews:
+DELETE FROM News;

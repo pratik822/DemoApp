@@ -1,0 +1,20 @@
+CREATE TABLE NewsEntity (
+    url TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    author TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    urlToImage TEXT NOT NULL,
+    publishedAt TEXT NOT NULL,
+    category TEXT NOT NULL
+);
+
+insertNews:
+INSERT OR REPLACE INTO NewsEntity(url, name, author, title, description, urlToImage, publishedAt, category)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+getNewsByCategory:
+SELECT * FROM NewsEntity WHERE category = :category;
+
+deleteAllNews:
+DELETE FROM NewsEntity;

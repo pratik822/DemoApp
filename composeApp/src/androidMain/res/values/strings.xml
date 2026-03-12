@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">DemoApp</string>
+    <string name="title_dashboard_feature">Dashboard</string>
+    <string name="title_home_listing_feature">Home Listing</string>
+    <string name="title_news_detail_feature">News Detail</string>
+</resources>
