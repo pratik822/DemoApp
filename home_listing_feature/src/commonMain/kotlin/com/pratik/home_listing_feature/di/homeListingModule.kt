@@ -9,6 +9,8 @@ import com.pratik.home_listing_feature.domain.repository.PostRepository
 import com.pratik.home_listing_feature.domain.usecase.GetAllPostUseCase
 import com.pratik.home_listing_feature.domain.usecase.GetSaveNewsUseCase
 import com.pratik.home_listing_feature.domain.usecase.SaveNewsUseCase
+import com.pratik.home_listing_feature.domain.usecase.UpdateFavoriteUseCase
+import com.pratik.home_listing_feature.domain.usecase.GetFavoriteNewsUseCase
 import com.pratik.home_listing_feature.ui.HomeListingScreenViewModel
 import com.pratik.home_listing_feature.utils.NetworkChecker
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +22,8 @@ val homeListingModule = module {
     factory { GetAllPostUseCase(get()) }
     factory { GetSaveNewsUseCase(get()) }
     factory { SaveNewsUseCase(get()) }
+    factory { UpdateFavoriteUseCase(get()) }
+    factory { GetFavoriteNewsUseCase(get()) }
     factory { NetworkChecker() }
-    factory { HomeListingScreenViewModel(get(), get(), get(), get(), Dispatchers.Main) }
+    factory { HomeListingScreenViewModel(get(), get(), get(), get(), get(), get(), Dispatchers.Main) }
 }

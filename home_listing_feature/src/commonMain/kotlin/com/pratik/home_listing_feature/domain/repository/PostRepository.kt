@@ -9,4 +9,6 @@ interface PostRepository {
     suspend fun saveNews(category:String,newsList: List<NewsList>)
 
     suspend fun getSavedNews(category: String): List<NewsList>
+    suspend fun updateFavorite(url: String, isFavorite: Boolean)
+    suspend fun getAllFavorites(): List<NewsList>
 }

@@ -11,6 +11,7 @@ import com.pratik.news_detail_feature.presentation.ui.HomeDetailScreenComposable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import com.pratik.home_listing_feature.ui.HomeListingScreen
+import com.pratik.home_listing_feature.ui.FavoriteListingScreen
 
 private val config = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -18,6 +19,7 @@ private val config = SavedStateConfiguration {
             subclass(Home::class, Home.serializer())
             subclass(Details::class, Details.serializer())
             subclass(Dashboard::class, Dashboard.serializer())
+            subclass(Favorites::class, Favorites.serializer())
         }
     }
 }
@@ -41,6 +43,17 @@ fun NavGraph() {
             is Home -> NavEntry(key) {
                 HomeListingScreen(
                     category = key.item,
+                    onItemClick = { selectedPost ->
+                        backStack.add(Details(post = selectedPost))
+                    },
+                    onBackClick = { backStack.remove(key) },
+                    onFavoriteClick = {
+                        backStack.add(Favorites())
+                    }
+                )
+            }
+            is Favorites -> NavEntry(key) {
+                FavoriteListingScreen(
                     onItemClick = { selectedPost ->
                         backStack.add(Details(post = selectedPost))
                     },

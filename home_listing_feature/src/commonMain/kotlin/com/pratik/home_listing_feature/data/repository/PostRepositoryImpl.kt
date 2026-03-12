@@ -13,9 +13,25 @@ class PostRepositoryImpl(
 ) : PostRepository {
 
     override suspend fun getAllPost(category: String): List<NewsList> {
-        return apiService.getAllPost(category).articles.map {
-            it.toNewsList()
+
+        try {
+            val articles = apiService.getAllPost(category).articles
+
+            val favorites = database.newsQueries.getAllFavorites().awaitAsList()
+            val favoriteUrls = favorites.map { it.url }.toSet()
+
+            return articles.map { article ->
+                val news = article.toNewsList()
+                news.copy(isFavorite = favoriteUrls.contains(news.url))
+            }
+
+        } catch (e: Exception) {
+
+            return apiService.getAllPost(category).articles.map {
+                it.toNewsList()
+            }
         }
+
     }
 
     override suspend fun saveNews(category: String, newsList: List<NewsList>) {
@@ -29,7 +45,8 @@ class PostRepositoryImpl(
                     description = news.description,
                     urlToImage = news.urlToImage,
                     publishedAt = news.publishedAt,
-                    category = category
+                    category = category,
+                    isFavorite = news.isFavorite
                 )
             }
         }
@@ -47,7 +64,31 @@ class PostRepositoryImpl(
                     description = it.description,
                     url = it.url,
                     urlToImage = it.urlToImage,
-                    publishedAt = it.publishedAt
+                    publishedAt = it.publishedAt,
+                    isFavorite = it.isFavorite ?: false
                 )
             }
-    }}
+    }
+
+    override suspend fun updateFavorite(url: String, isFavorite: Boolean) {
+        database.newsQueries.updateFavorite(isFavorite, url)
+    }
+
+    override suspend fun getAllFavorites(): List<NewsList> {
+        return database.newsQueries
+            .getAllFavorites()
+            .awaitAsList()
+            .map {
+                NewsList(
+                    name = it.name,
+                    author = it.author,
+                    title = it.title,
+                    description = it.description,
+                    url = it.url,
+                    urlToImage = it.urlToImage,
+                    publishedAt = it.publishedAt,
+                    isFavorite = it.isFavorite ?: false
+                )
+            }
+    }
+}

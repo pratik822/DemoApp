@@ -60,7 +60,9 @@ val viewModels = module {
             get(),
             get(),
             get(),
-            Dispatchers.Main
+            networkChecker = get(),
+            getFavoriteNewsUseCase = get(),
+            dispatcher = Dispatchers.Main
         )
     }
 }

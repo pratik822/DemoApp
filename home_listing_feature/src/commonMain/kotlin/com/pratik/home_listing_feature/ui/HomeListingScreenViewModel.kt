@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.pratik.home_listing_feature.domain.usecase.GetAllPostUseCase
 import com.pratik.home_listing_feature.domain.usecase.GetSaveNewsUseCase
 import com.pratik.home_listing_feature.domain.usecase.SaveNewsUseCase
+import com.pratik.home_listing_feature.domain.usecase.UpdateFavoriteUseCase
+import com.pratik.home_listing_feature.domain.usecase.GetFavoriteNewsUseCase
 import com.pratik.home_listing_feature.utils.NetworkChecker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,8 @@ class HomeListingScreenViewModel(
     private val getAllPostUseCase: GetAllPostUseCase,
     private val saveNewsUseCase: SaveNewsUseCase,
     private val getSaveNewsUseCase: GetSaveNewsUseCase,
+    private val updateFavoriteUseCase: UpdateFavoriteUseCase,
+    private val getFavoriteNewsUseCase: GetFavoriteNewsUseCase,
     private val networkChecker: NetworkChecker,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
@@ -28,6 +32,8 @@ class HomeListingScreenViewModel(
     fun processIntent(postIntent: PostIntent) {
         when (postIntent) {
             is PostIntent.loadPost -> getAllPost(postIntent.category)
+            is PostIntent.ToggleFavorite -> toggleFavorite(postIntent.post)
+            is PostIntent.LoadFavorites -> getFavorites()
         }
     }
 
@@ -47,6 +53,36 @@ class HomeListingScreenViewModel(
                 _allPostState.update { PostState.Success(getSaveNewsUseCase(category)) }
             }
 
+        }
+    }
+
+    private fun toggleFavorite(post: com.pratik.demoapp.core.utils.NewsList) {
+        viewModelScope.launch(dispatcher) {
+            val newFavoriteState = !post.isFavorite
+            updateFavoriteUseCase(post.url, newFavoriteState)
+            
+            _allPostState.update { currentState ->
+                if (currentState is PostState.Success) {
+                    val updatedList = currentState.post.map {
+                        if (it.url == post.url) it.copy(isFavorite = newFavoriteState) else it
+                    }
+                    PostState.Success(updatedList)
+                } else {
+                    currentState
+                }
+            }
+        }
+    }
+
+    private fun getFavorites() {
+        viewModelScope.launch(dispatcher) {
+            _allPostState.update { PostState.Loading }
+            try {
+                val favorites = getFavoriteNewsUseCase()
+                _allPostState.update { PostState.Success(favorites) }
+            } catch (e: Exception) {
+                _allPostState.update { PostState.Error(e.message ?: "Unknown error") }
+            }
         }
     }
 }

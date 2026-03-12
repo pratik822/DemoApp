@@ -6,15 +6,22 @@ CREATE TABLE NewsEntity (
     description TEXT NOT NULL,
     urlToImage TEXT NOT NULL,
     publishedAt TEXT NOT NULL,
-    category TEXT NOT NULL
+    category TEXT NOT NULL,
+    isFavorite INTEGER AS kotlin.Boolean DEFAULT 0
 );
 
 insertNews:
-INSERT OR REPLACE INTO NewsEntity(url, name, author, title, description, urlToImage, publishedAt, category)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO NewsEntity(url, name, author, title, description, urlToImage, publishedAt, category, isFavorite)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 getNewsByCategory:
 SELECT * FROM NewsEntity WHERE category = :category;
 
+getAllFavorites:
+SELECT * FROM NewsEntity WHERE isFavorite = 1;
+
 deleteAllNews:
 DELETE FROM NewsEntity;
+
+updateFavorite:
+UPDATE NewsEntity SET isFavorite = :isFavorite WHERE url = :url;
