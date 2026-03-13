@@ -14,4 +14,7 @@ class Home(val item: String) : NavKey
 class Favorites() : NavKey
 
 @Serializable
+class MapRoute() : NavKey
+
+@Serializable
 data class Details(val post: NewsList) : NavKey

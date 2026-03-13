@@ -26,12 +26,10 @@ class PostRepositoryImpl(
             }
 
         } catch (e: Exception) {
-
             return apiService.getAllPost(category).articles.map {
                 it.toNewsList()
             }
         }
-
     }
 
     override suspend fun saveNews(category: String, newsList: List<NewsList>) {

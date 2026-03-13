@@ -86,6 +86,10 @@ kotlin {
 
                 // Koin Android
                 implementation(libs.koin.android)
+                
+                // Google Maps
+                implementation("com.google.maps.android:maps-compose:8.2.1")
+                implementation("com.google.android.gms:play-services-maps:19.0.0")
             }
         }
 

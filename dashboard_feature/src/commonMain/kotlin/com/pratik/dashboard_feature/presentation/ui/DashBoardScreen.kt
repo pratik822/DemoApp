@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import kotlin.random.Random
 
 @Composable
-fun DashBoardScreen(onItemClick: (String) -> Unit) {
+fun DashBoardScreen(onItemClick: (String) -> Unit, onMapClick: () -> Unit) {
     val listItem = listOf("business", "entertainment", "general", "health", "science", "sports", "technology")
 
-    Scaffold(topBar = { AppBars() }) { paddingValues ->
+    Scaffold(topBar = { AppBars(onMapClick) }) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
 
             LazyVerticalGrid(
@@ -47,9 +51,18 @@ fun DashBoardScreen(onItemClick: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBars() {
+fun AppBars(onMapClick: () -> Unit) {
     TopAppBar(
         title = { Text("Category") },
+        actions = {
+            IconButton(onClick = onMapClick) {
+                Icon(
+                    imageVector = Icons.Filled.Place,
+                    contentDescription = "Map",
+                    tint = Color.White
+                )
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Blue,
             titleContentColor = Color.White

@@ -12,6 +12,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import com.pratik.home_listing_feature.ui.HomeListingScreen
 import com.pratik.home_listing_feature.ui.FavoriteListingScreen
+import com.pratik.demoapp.presentation.ui.MapScreen
 
 private val config = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -20,6 +21,7 @@ private val config = SavedStateConfiguration {
             subclass(Details::class, Details.serializer())
             subclass(Dashboard::class, Dashboard.serializer())
             subclass(Favorites::class, Favorites.serializer())
+            subclass(MapRoute::class, MapRoute.serializer())
         }
     }
 }
@@ -37,6 +39,9 @@ fun NavGraph() {
                 DashBoardScreen(
                     onItemClick = { category ->
                         backStack.add(Home(item = category))
+                    },
+                    onMapClick = {
+                        backStack.add(MapRoute())
                     }
                 )
             }
@@ -59,6 +64,9 @@ fun NavGraph() {
                     },
                     onBackClick = { backStack.remove(key) }
                 )
+            }
+            is MapRoute -> NavEntry(key) {
+                MapScreen()
             }
             is Details -> NavEntry(key) {
                 HomeDetailScreenComposable(
