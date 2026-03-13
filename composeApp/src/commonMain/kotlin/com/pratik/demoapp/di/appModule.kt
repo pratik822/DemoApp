@@ -42,8 +42,3 @@ val appModules = listOf(
     homeListingModule
 )
 
-fun initKoin() {
-    startKoin {
-        modules(appModules)
-    }
-}
