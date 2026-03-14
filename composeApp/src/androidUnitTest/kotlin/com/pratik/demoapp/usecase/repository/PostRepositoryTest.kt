@@ -1,7 +1,7 @@
 package com.pratik.demoapp.usecase.repository
 
-import com.pratik.demoapp.domain.model.NewsList
-import com.pratik.demoapp.domain.repository.PostRepository
+import com.pratik.demoapp.core.utils.NewsList
+import com.pratik.home_listing_feature.domain.repository.PostRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -21,7 +21,6 @@ class PostRepositoryTest {
         coEvery { postRepository.getAllPost(category)  } returns mockList
          val result = postRepository.getAllPost(category)
          assertEquals(1,result.size)
-
 
     }
  }

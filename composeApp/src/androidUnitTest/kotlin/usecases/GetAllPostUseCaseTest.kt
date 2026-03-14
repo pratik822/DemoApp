@@ -1,8 +1,8 @@
 package usecases
 
-import com.pratik.demoapp.domain.model.NewsList
-import com.pratik.demoapp.domain.repository.PostRepository
-import com.pratik.demoapp.domain.usecase.GetAllPostUseCase
+import com.pratik.demoapp.core.utils.NewsList
+import com.pratik.home_listing_feature.domain.repository.PostRepository
+import com.pratik.home_listing_feature.domain.usecase.GetAllPostUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

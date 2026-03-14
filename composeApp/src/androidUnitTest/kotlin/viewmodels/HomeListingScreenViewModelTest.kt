@@ -1,10 +1,17 @@
 package viewmodels
 
-import com.pratik.demoapp.domain.model.NewsList
-import com.pratik.demoapp.domain.usecase.GetAllPostUseCase
-import com.pratik.demoapp.presentation.ui.HomeListingScreenViewModel
-import com.pratik.demoapp.presentation.ui.PostIntent
+import com.pratik.demoapp.core.utils.NewsList
+import com.pratik.home_listing_feature.domain.usecase.GetAllPostUseCase
+import com.pratik.home_listing_feature.domain.usecase.GetFavoriteNewsUseCase
+import com.pratik.home_listing_feature.domain.usecase.GetSaveNewsUseCase
+import com.pratik.home_listing_feature.domain.usecase.SaveNewsUseCase
+import com.pratik.home_listing_feature.domain.usecase.UpdateFavoriteUseCase
+import com.pratik.home_listing_feature.ui.HomeListingScreenViewModel
+import com.pratik.home_listing_feature.ui.PostIntent
+import com.pratik.home_listing_feature.ui.PostState
+import com.pratik.home_listing_feature.utils.NetworkChecker
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -13,28 +20,44 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs // Use this for cleaner type checking
+import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeListingScreenViewModelTest {
 
     private val getAllPostUseCase: GetAllPostUseCase = mockk()
-    private val testDispatcher = StandardTestDispatcher()
+    private val saveNewsUseCase: SaveNewsUseCase = mockk(relaxed = true)
+    private val getSaveNewsUseCase: GetSaveNewsUseCase = mockk()
+    private val updateFavoriteUseCase: UpdateFavoriteUseCase = mockk(relaxed = true)
+    private val getFavoriteNewsUseCase: GetFavoriteNewsUseCase = mockk()
+    private val networkChecker: NetworkChecker= mockk()
+
     private lateinit var viewModel: HomeListingScreenViewModel
 
-    // Move mock data to a helper or keep it as a private property
+    private val dispatcher = StandardTestDispatcher()
+
+
     private val mockkList = listOf(
         NewsList("test", "test", "test", "test", "test", "test", "test")
     )
 
     @Before
     fun setup() {
-        // Initialize once here; no need to repeat inside the test method
-        viewModel = HomeListingScreenViewModel(getAllPostUseCase, testDispatcher)
+        every { networkChecker.isNetworkAvailable() } returns true
+        
+        viewModel = HomeListingScreenViewModel(
+            getAllPostUseCase,
+            saveNewsUseCase,
+            getSaveNewsUseCase,
+            updateFavoriteUseCase,
+            getFavoriteNewsUseCase,
+            networkChecker,
+            dispatcher
+        )
     }
 
     @Test
-    fun `loadPost intent updates state to Success when use case returns data`() = runTest(testDispatcher) {
+    fun `loadPost intent updates state to Success when use case returns data`() = runTest(dispatcher) {
         // GIVEN
         val category = "Tech"
         coEvery { getAllPostUseCase(category) } returns mockkList
@@ -42,22 +65,18 @@ class HomeListingScreenViewModelTest {
         // WHEN
         viewModel.processIntent(PostIntent.loadPost(category))
 
-        // Execute pending coroutines
         advanceUntilIdle()
 
         // THEN
         val state = viewModel.allPostState.value
 
-        // 1. assertIs is cleaner than assertTrue + manual casting
-        // It also provides better error messages if it fails
         assertIs<PostState.Success>(state)
 
-        // 2. Because of assertIs, 'state' is now smart-cast to PostState.Success
         assertEquals(mockkList, state.post)
     }
 
     @Test
-    fun `loadPost intent updates state to Error when use case throws exception`() = runTest(testDispatcher) {
+    fun `loadPost intent updates state to Error when use case throws exception`() = runTest(dispatcher) {
         val category = "Tech"
         coEvery { getAllPostUseCase(category) } throws Exception("Test Exception")
         viewModel.processIntent(PostIntent.loadPost(category))
