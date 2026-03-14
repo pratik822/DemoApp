@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.pratik.demoapp.core.utils.NewsList
 import com.pratik.demoapp.core.utils.PlatformNetworkImage
-
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -29,71 +28,30 @@ fun HomeListingScreen(
     val viewModel: HomeListingScreenViewModel = koinViewModel()
     val state by viewModel.allPostState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.processIntent(PostIntent.loadPost(category))
+    LaunchedEffect(category) {
+        viewModel.processIntent(PostIntent.LoadPost(category))
     }
-    Scaffold(topBar = { AppBar(onBackClick, onFavoriteClick) }) {
-        Column(modifier = Modifier.fillMaxSize().padding(it)) {
-            val currentState = state
-            when (currentState) {
-                is PostState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+
+    Scaffold(
+        topBar = {
+            CommonAppBar(
+                title = "News Listing",
+                onBackClick = onBackClick,
+                actions = {
+                    IconButton(onClick = onFavoriteClick) {
+                        Icon(Icons.Filled.Favorite, "Favorites", tint = Color.White)
                     }
                 }
-
-                is PostState.Success -> {
-                    NewsListScreen(
-                        news = currentState.post,
-                        onItemClick = onItemClick,
-                        onFavoriteToggle = { post ->
-                            viewModel.processIntent(PostIntent.ToggleFavorite(post))
-                        }
-                    )
-                }
-
-                is PostState.Error -> {
-                    Text(
-                        text = currentState.message,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
+            )
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AppBar(onBackClick: () -> Unit, onFavoriteClick: () -> Unit) {
-    TopAppBar(
-        title = { Text("News Listing") },
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
-            }
-        },
-        actions = {
-            IconButton(onClick = onFavoriteClick) {
-                Icon(
-                    imageVector = Icons.Filled.Favorite,
-                    contentDescription = "Favorites",
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Blue,
-            titleContentColor = Color.White
+    ) { padding ->
+        NewsContent(
+            state = state,
+            onItemClick = onItemClick,
+            onFavoriteToggle = { post -> viewModel.processIntent(PostIntent.ToggleFavorite(post)) },
+            modifier = Modifier.padding(padding)
         )
-    )
+    }
 }
 
 @Composable
@@ -108,65 +66,39 @@ fun FavoriteListingScreen(
         viewModel.processIntent(PostIntent.LoadFavorites)
     }
 
-    Scaffold(topBar = {
-        FavoriteAppBar(onBackClick)
-    }) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            val currentState = state
-            when (currentState) {
-                is PostState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                is PostState.Success -> {
-                    if (currentState.post.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No favorites yet")
-                        }
-                    } else {
-                        NewsListScreen(
-                            news = currentState.post,
-                            onItemClick = onItemClick,
-                            onFavoriteToggle = { post ->
-                                viewModel.processIntent(PostIntent.ToggleFavorite(post))
-                            }
-                        )
-                    }
-                }
-
-                is PostState.Error -> {
-                    Text(
-                        text = currentState.message,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
+    Scaffold(
+        topBar = {
+            CommonAppBar(
+                title = "Favorites",
+                onBackClick = onBackClick
+            )
         }
+    ) { padding ->
+        NewsContent(
+            state = state,
+            onItemClick = onItemClick,
+            onFavoriteToggle = { post -> viewModel.processIntent(PostIntent.ToggleFavorite(post)) },
+            modifier = Modifier.padding(padding),
+            emptyMessage = "No favorites yet"
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoriteAppBar(onBackClick: () -> Unit) {
+fun CommonAppBar(
+    title: String,
+    onBackClick: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {}
+) {
     TopAppBar(
-        title = { Text("Favorites") },
+        title = { Text(title) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
+                Icon(Icons.Filled.ArrowBack, "Back", tint = Color.White)
             }
         },
+        actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Blue,
             titleContentColor = Color.White
@@ -175,22 +107,39 @@ fun FavoriteAppBar(onBackClick: () -> Unit) {
 }
 
 @Composable
-fun NewsListScreen(
-    news: List<NewsList>,
+fun NewsContent(
+    state: PostState,
     onItemClick: (NewsList) -> Unit,
-    onFavoriteToggle: (NewsList) -> Unit
+    onFavoriteToggle: (NewsList) -> Unit,
+    modifier: Modifier = Modifier,
+    emptyMessage: String = "No articles found"
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(news) { post ->
-            PostItem(
-                post = post,
-                onClick = { onItemClick(post) },
-                onFavoriteToggle = { onFavoriteToggle(post) })
+    Box(modifier = modifier.fillMaxSize()) {
+        when (state) {
+            is PostState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+            is PostState.Error -> Text(
+                text = state.message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.align(Alignment.Center)
+            )
+            is PostState.Success -> {
+                if (state.post.isEmpty()) {
+                    Text(emptyMessage, modifier = Modifier.align(Alignment.Center))
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.post, key = { it.url }) { post ->
+                            PostItem(
+                                post = post,
+                                onClick = { onItemClick(post) },
+                                onFavoriteToggle = { onFavoriteToggle(post) }
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -198,9 +147,7 @@ fun NewsListScreen(
 @Composable
 fun PostItem(post: NewsList, onClick: () -> Unit, onFavoriteToggle: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
@@ -222,17 +169,13 @@ fun PostItem(post: NewsList, onClick: () -> Unit, onFavoriteToggle: () -> Unit) 
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
             PlatformNetworkImage(
                 url = post.urlToImage,
                 modifier = Modifier.fillMaxWidth().height(200.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = post.description,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Spacer(Modifier.height(8.dp))
+            Text(text = post.description, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

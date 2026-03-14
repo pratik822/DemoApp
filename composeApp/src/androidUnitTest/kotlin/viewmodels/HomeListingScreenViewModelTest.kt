@@ -57,13 +57,13 @@ class HomeListingScreenViewModelTest {
     }
 
     @Test
-    fun `loadPost intent updates state to Success when use case returns data`() = runTest(dispatcher) {
+    fun `LoadPost intent updates state to Success when use case returns data`() = runTest(dispatcher) {
         // GIVEN
         val category = "Tech"
         coEvery { getAllPostUseCase(category) } returns mockkList
 
         // WHEN
-        viewModel.processIntent(PostIntent.loadPost(category))
+        viewModel.processIntent(PostIntent.LoadPost(category))
 
         advanceUntilIdle()
 
@@ -76,15 +76,13 @@ class HomeListingScreenViewModelTest {
     }
 
     @Test
-    fun `loadPost intent updates state to Error when use case throws exception`() = runTest(dispatcher) {
+    fun `LoadPost intent updates state to Error when use case throws exception`() = runTest(dispatcher) {
         val category = "Tech"
         coEvery { getAllPostUseCase(category) } throws Exception("Test Exception")
-        viewModel.processIntent(PostIntent.loadPost(category))
+        viewModel.processIntent(PostIntent.LoadPost(category))
         advanceUntilIdle()
         val state = viewModel.allPostState.value
         assertIs<PostState.Error>(state)
         assertEquals("Test Exception", state.message)
-
-
     }
 }

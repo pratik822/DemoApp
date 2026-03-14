@@ -13,22 +13,17 @@ class PostRepositoryImpl(
 ) : PostRepository {
 
     override suspend fun getAllPost(category: String): List<NewsList> {
-
-        try {
-            val articles = apiService.getAllPost(category).articles
-
-            val favorites = database.newsQueries.getAllFavorites().awaitAsList()
-            val favoriteUrls = favorites.map { it.url }.toSet()
-
-            return articles.map { article ->
-                val news = article.toNewsList()
-                news.copy(isFavorite = favoriteUrls.contains(news.url))
-            }
-
+        val articles = apiService.getAllPost(category).articles
+        
+        val favoriteUrls = try {
+            database.newsQueries.getAllFavorites().awaitAsList().map { it.url }.toSet()
         } catch (e: Exception) {
-            return apiService.getAllPost(category).articles.map {
-                it.toNewsList()
-            }
+            emptySet()
+        }
+
+        return articles.map { article ->
+            val news = article.toNewsList()
+            news.copy(isFavorite = favoriteUrls.contains(news.url))
         }
     }
 

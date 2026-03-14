@@ -25,13 +25,12 @@ class HomeListingScreenViewModel(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
-    private val _allPostState = MutableStateFlow<PostState>(
-        PostState.Loading)
+    private val _allPostState = MutableStateFlow<PostState>(PostState.Loading)
     val allPostState = _allPostState.asStateFlow()
 
     fun processIntent(postIntent: PostIntent) {
         when (postIntent) {
-            is PostIntent.loadPost -> getAllPost(postIntent.category)
+            is PostIntent.LoadPost -> getAllPost(postIntent.category)
             is PostIntent.ToggleFavorite -> toggleFavorite(postIntent.post)
             is PostIntent.LoadFavorites -> getFavorites()
         }
@@ -39,20 +38,19 @@ class HomeListingScreenViewModel(
 
     private fun getAllPost(category: String) {
         viewModelScope.launch(dispatcher) {
-            if(networkChecker.isNetworkAvailable()){
+            _allPostState.update { PostState.Loading }
+            if (networkChecker.isNetworkAvailable()) {
                 try {
-                    val post = getAllPostUseCase.invoke(category)
-                        _allPostState.update { PostState.Success(post) }
-                        saveNewsUseCase(category,post)
-
-
+                    val posts = getAllPostUseCase(category)
+                    _allPostState.update { PostState.Success(posts) }
+                    saveNewsUseCase(category, posts)
                 } catch (e: Exception) {
                     _allPostState.update { PostState.Error(e.message ?: "Unknown error") }
                 }
-            }else{
-                _allPostState.update { PostState.Success(getSaveNewsUseCase(category)) }
+            } else {
+                val savedPosts = getSaveNewsUseCase(category)
+                _allPostState.update { PostState.Success(savedPosts) }
             }
-
         }
     }
 
