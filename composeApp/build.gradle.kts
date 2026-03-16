@@ -29,9 +29,9 @@ kotlin {
 
                 // Core modules
                 implementation(project(":core"))
-                implementation(project(":dashboard_feature"))
-                implementation(project(":home_listing_feature"))
-                implementation(project(":news_detail_feature"))
+                implementation(project(":features:dashboard_feature"))
+                implementation(project(":features:home_listing_feature"))
+                implementation(project(":features:news_detail_feature"))
 
                 // Compose
                 implementation(libs.compose.runtime)

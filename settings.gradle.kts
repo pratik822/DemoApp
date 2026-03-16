@@ -29,7 +29,7 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
-include(":dashboard_feature")
-include(":home_listing_feature")
-include(":news_detail_feature")
+include(":features:dashboard_feature")
+include(":features:home_listing_feature")
+include(":features:news_detail_feature")
 include(":core")
