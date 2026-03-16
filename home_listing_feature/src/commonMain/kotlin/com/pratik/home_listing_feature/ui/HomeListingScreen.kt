@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.pratik.demoapp.core.utils.CommonAlert
 import com.pratik.demoapp.core.utils.NewsList
 import com.pratik.demoapp.core.utils.PlatformNetworkImage
 import org.koin.compose.viewmodel.koinViewModel
@@ -114,6 +115,20 @@ fun NewsContent(
     modifier: Modifier = Modifier,
     emptyMessage: String = "No articles found"
 ) {
+    var showDialog by remember { mutableStateOf<NewsList?>(null) }
+
+    if (showDialog != null) {
+        CommonAlert(
+            title = "Favorite",
+            message = "Are you sure you want to favorite this?",
+            onConfirm = {
+                showDialog?.let { onFavoriteToggle(it) }
+                showDialog = null
+            },
+            onDismiss = { }
+        )
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         when (state) {
             is PostState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -134,7 +149,7 @@ fun NewsContent(
                             PostItem(
                                 post = post,
                                 onClick = { onItemClick(post) },
-                                onFavoriteToggle = { onFavoriteToggle(post) }
+                                onFavoriteToggle = { showDialog = post }
                             )
                         }
                     }
