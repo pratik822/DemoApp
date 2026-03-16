@@ -3,11 +3,13 @@ package com.pratik.home_listing_feature.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pratik.home_listing_feature.domain.usecase.GetAllPostUseCase
+import com.pratik.home_listing_feature.domain.usecase.GetFavoriteNewsUseCase
 import com.pratik.home_listing_feature.domain.usecase.GetSaveNewsUseCase
 import com.pratik.home_listing_feature.domain.usecase.SaveNewsUseCase
 import com.pratik.home_listing_feature.domain.usecase.UpdateFavoriteUseCase
-import com.pratik.home_listing_feature.domain.usecase.GetFavoriteNewsUseCase
+import com.pratik.home_listing_feature.utils.BackgroundWorker
 import com.pratik.home_listing_feature.utils.NetworkChecker
+import com.pratik.home_listing_feature.utils.PlatformChecker
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +24,9 @@ class HomeListingScreenViewModel(
     private val updateFavoriteUseCase: UpdateFavoriteUseCase,
     private val getFavoriteNewsUseCase: GetFavoriteNewsUseCase,
     private val networkChecker: NetworkChecker,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val platform: PlatformChecker,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val backgroundWorker: BackgroundWorker
 ) : ViewModel() {
 
     private val _allPostState = MutableStateFlow<PostState>(PostState.Loading)
@@ -37,23 +41,33 @@ class HomeListingScreenViewModel(
     }
 
     private fun getAllPost(category: String) {
+
         viewModelScope.launch(dispatcher) {
             _allPostState.update { PostState.Loading }
             if (networkChecker.isNetworkAvailable()) {
                 try {
                     val posts = getAllPostUseCase(category)
+                    startWorker()
                     _allPostState.update { PostState.Success(posts) }
-                    saveNewsUseCase(category, posts)
+                    if(platform.equals("ANDROID")){
+                        saveNewsUseCase(category, posts)
+                    }
+
                 } catch (e: Exception) {
                     _allPostState.update { PostState.Error(e.message ?: "Unknown error") }
                 }
             } else {
-                val savedPosts = getSaveNewsUseCase(category)
-                _allPostState.update { PostState.Success(savedPosts) }
+                if(platform.equals("ANDROID")) {
+                    val savedPosts = getSaveNewsUseCase(category)
+                    _allPostState.update { PostState.Success(savedPosts) }
+                }
             }
         }
     }
 
+    private fun startWorker(){
+        backgroundWorker.startTask()
+    }
     private fun toggleFavorite(post: com.pratik.demoapp.core.utils.NewsList) {
         viewModelScope.launch(dispatcher) {
             val newFavoriteState = !post.isFavorite

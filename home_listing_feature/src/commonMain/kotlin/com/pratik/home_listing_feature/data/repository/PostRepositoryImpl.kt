@@ -6,18 +6,29 @@ import com.pratik.demoapp.db.AppDatabase
 import com.pratik.home_listing_feature.data.model.toNewsList
 import com.pratik.home_listing_feature.data.remote.ApiServices
 import com.pratik.home_listing_feature.domain.repository.PostRepository
+import com.pratik.home_listing_feature.utils.PlatformChecker
 
 class PostRepositoryImpl(
     private val apiService: ApiServices,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val platform: PlatformChecker
 ) : PostRepository {
 
     override suspend fun getAllPost(category: String): List<NewsList> {
-        val articles = apiService.getAllPost(category).articles
-        
-        val favoriteUrls = try {
-            database.newsQueries.getAllFavorites().awaitAsList().map { it.url }.toSet()
-        } catch (e: Exception) {
+        val response = apiService.getAllPost(category)
+        val articles = response.articles
+
+        val favoriteUrls = if (platform.getPlatform() == "ANDROID") {
+            try {
+                database.newsQueries
+                    .getAllFavorites()
+                    .awaitAsList()
+                    .map { it.url }
+                    .toSet()
+            } catch (e: Exception) {
+                emptySet()
+            }
+        } else {
             emptySet()
         }
 
@@ -28,60 +39,72 @@ class PostRepositoryImpl(
     }
 
     override suspend fun saveNews(category: String, newsList: List<NewsList>) {
-        database.newsQueries.transaction {
-            newsList.forEach { news ->
-                database.newsQueries.insertNews(
-                    url = news.url,
-                    name = news.name,
-                    author = news.author,
-                    title = news.title,
-                    description = news.description,
-                    urlToImage = news.urlToImage,
-                    publishedAt = news.publishedAt,
-                    category = category,
-                    isFavorite = news.isFavorite
-                )
+        if (platform.getPlatform() == "ANDROID") {
+            database.newsQueries.transaction {
+                newsList.forEach { news ->
+                    database.newsQueries.insertNews(
+                        url = news.url,
+                        name = news.name,
+                        author = news.author,
+                        title = news.title,
+                        description = news.description,
+                        urlToImage = news.urlToImage,
+                        publishedAt = news.publishedAt,
+                        category = category,
+                        isFavorite = news.isFavorite
+                    )
+                }
             }
         }
     }
 
-    override suspend fun getSavedNews(category: String): List<NewsList> {
-        return database.newsQueries
-            .getNewsByCategory(category)
-            .awaitAsList()
-            .map {
-                NewsList(
-                    name = it.name,
-                    author = it.author,
-                    title = it.title,
-                    description = it.description,
-                    url = it.url,
-                    urlToImage = it.urlToImage,
-                    publishedAt = it.publishedAt,
-                    isFavorite = it.isFavorite ?: false
-                )
-            }
+    override suspend fun updateFavorite(url: String, isFavorite: Boolean) {
+        if (platform.getPlatform() == "ANDROID") {
+            database.newsQueries.updateFavorite(isFavorite, url)
+        }
     }
 
-    override suspend fun updateFavorite(url: String, isFavorite: Boolean) {
-        database.newsQueries.updateFavorite(isFavorite, url)
+    override suspend fun getSavedNews(category: String): List<NewsList> {
+        return if (platform.getPlatform() == "ANDROID") {
+            database.newsQueries
+                .getNewsByCategory(category)
+                .awaitAsList()
+                .map {
+                    NewsList(
+                        name = it.name,
+                        author = it.author,
+                        title = it.title,
+                        description = it.description,
+                        url = it.url,
+                        urlToImage = it.urlToImage,
+                        publishedAt = it.publishedAt,
+                        isFavorite = it.isFavorite ?: false
+                    )
+                }
+        } else {
+            emptyList()
+        }
     }
 
     override suspend fun getAllFavorites(): List<NewsList> {
-        return database.newsQueries
-            .getAllFavorites()
-            .awaitAsList()
-            .map {
-                NewsList(
-                    name = it.name,
-                    author = it.author,
-                    title = it.title,
-                    description = it.description,
-                    url = it.url,
-                    urlToImage = it.urlToImage,
-                    publishedAt = it.publishedAt,
-                    isFavorite = it.isFavorite ?: false
-                )
-            }
+        return if (platform.getPlatform() == "ANDROID") {
+            database.newsQueries
+                .getAllFavorites()
+                .awaitAsList()
+                .map {
+                    NewsList(
+                        name = it.name,
+                        author = it.author,
+                        title = it.title,
+                        description = it.description,
+                        url = it.url,
+                        urlToImage = it.urlToImage,
+                        publishedAt = it.publishedAt,
+                        isFavorite = it.isFavorite ?: false
+                    )
+                }
+        } else {
+            emptyList()
+        }
     }
 }

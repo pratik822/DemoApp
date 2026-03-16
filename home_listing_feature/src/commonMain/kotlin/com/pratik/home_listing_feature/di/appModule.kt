@@ -35,7 +35,7 @@ val networkModule = module {
 
 val repositoryModule = module {
     single<PostRepository> {
-        PostRepositoryImpl(get(), get())
+        PostRepositoryImpl(get(), get(),get())
     }
 }
 
@@ -61,8 +61,10 @@ val viewModels = module {
             get(),
             get(),
             networkChecker = get(),
+            platform = get(),
             getFavoriteNewsUseCase = get(),
-            dispatcher = Dispatchers.Main
+            dispatcher = Dispatchers.Main,
+            backgroundWorker = get()
         )
     }
 }

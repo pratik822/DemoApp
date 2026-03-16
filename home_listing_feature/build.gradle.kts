@@ -49,16 +49,29 @@ kotlin {
             implementation("io.coil-kt.coil3:coil-compose:3.0.4")
             implementation("io.coil-kt.coil3:coil-network-ktor3:3.0.4")
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
-            
-            // SQLDelight
+
+            // Coroutines
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
         }
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
             implementation(libs.koin.android)
+            implementation("androidx.work:work-runtime-ktx:2.9.0")
         }
+
+        val webMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
+            }
+        }
+
         val jsMain by getting {
+            dependsOn(webMain)
         }
+        
         val wasmJsMain by getting {
+            dependsOn(webMain)
         }
     }
 }
