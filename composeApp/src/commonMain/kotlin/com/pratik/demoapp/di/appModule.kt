@@ -1,5 +1,6 @@
 package com.pratik.demoapp.di
 
+import com.pratik.dashboard_feature.di.dashboardModule
 import com.pratik.demoapp.database.DatabaseDriverFactory
 import com.pratik.demoapp.db.AppDatabase
 import com.pratik.home_listing_feature.di.homeListingModule
@@ -7,7 +8,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -39,6 +39,6 @@ val appModules = listOf(
     platformModule,
     networkModule,
     databaseModule,
-    homeListingModule
+    homeListingModule,
+    dashboardModule
 )
-

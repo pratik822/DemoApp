@@ -58,21 +58,6 @@ kotlin {
             implementation(libs.koin.android)
             implementation("androidx.work:work-runtime-ktx:2.9.0")
         }
-
-        val webMain by creating {
-            dependsOn(commonMain.get())
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
-            }
-        }
-
-        val jsMain by getting {
-            dependsOn(webMain)
-        }
-        
-        val wasmJsMain by getting {
-            dependsOn(webMain)
-        }
     }
 }
 

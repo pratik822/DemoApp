@@ -33,6 +33,8 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
 
         }

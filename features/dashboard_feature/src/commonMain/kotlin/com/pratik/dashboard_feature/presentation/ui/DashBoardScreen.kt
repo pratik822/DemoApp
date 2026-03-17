@@ -2,47 +2,56 @@ package com.pratik.dashboard_feature.presentation.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.collectLatest
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.random.Random
 
 @Composable
-fun DashBoardScreen(onItemClick: (String) -> Unit, onMapClick: () -> Unit) {
-    val listItem = listOf("business", "entertainment", "general", "health", "science", "sports", "technology")
+fun DashBoardScreen(
+    onItemClick: (String) -> Unit,
+    onMapClick: () -> Unit,
+    viewModel: DashboardViewModel = koinViewModel()
+) {
+    val state by viewModel.state.collectAsState()
 
-    Scaffold(topBar = { AppBars(onMapClick) }) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when (effect) {
+                is DashboardEffect.NavigateToHomeListing -> onItemClick(effect.category)
+                is DashboardEffect.NavigateToMap -> onMapClick()
+            }
+        }
+    }
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                items(listItem) { item ->
-                    GridItem(item, onItemClick = onItemClick)
+    Scaffold(
+        topBar = { AppBars(onMapClick = { viewModel.handleIntent(DashboardIntent.OnMapClick) }) }
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    items(state.categories) { item ->
+                        GridItem(item, onItemClick = { viewModel.handleIntent(DashboardIntent.OnCategoryClick(item)) })
+                    }
                 }
             }
         }
@@ -81,18 +90,25 @@ fun GridItem(item: String, onItemClick: (String) -> Unit) {
         )
     }
 
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .background(randomColor)
-            .padding(10.dp)
             .clickable { onItemClick(item) },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    )
-    {
-        Text(item, color = Color.White, textAlign = TextAlign.Center)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(randomColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = item.replaceFirstChar { it.uppercase() },
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
     }
-
 }
