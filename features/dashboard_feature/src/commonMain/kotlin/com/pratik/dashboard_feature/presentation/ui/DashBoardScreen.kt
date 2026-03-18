@@ -61,22 +61,25 @@ fun DashBoardScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBars(onMapClick: () -> Unit) {
-    TopAppBar(
-        title = { Text("Category") },
-        actions = {
-            IconButton(onClick = onMapClick) {
-                Icon(
-                    imageVector = Icons.Filled.Place,
-                    contentDescription = "Map",
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Blue,
-            titleContentColor = Color.White
+    Surface(
+        color = Color.Blue,
+        contentColor = Color.White,
+        shadowElevation = 4.dp
+    ) {
+        TopAppBar(
+            modifier = Modifier.height(70.dp),
+            windowInsets = WindowInsets(0),
+            title = { 
+                Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.CenterStart) {
+                    Text("Category", style = MaterialTheme.typography.titleMedium) 
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                titleContentColor = Color.White
+            )
         )
-    )
+    }
 }
 
 @Composable

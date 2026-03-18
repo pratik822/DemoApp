@@ -37,12 +37,7 @@ fun HomeListingScreen(
         topBar = {
             CommonAppBar(
                 title = "News Listing",
-                onBackClick = onBackClick,
-                actions = {
-                    IconButton(onClick = onFavoriteClick) {
-                        Icon(Icons.Filled.Favorite, "Favorites", tint = Color.White)
-                    }
-                }
+                onBackClick = onBackClick
             )
         }
     ) { padding ->
@@ -55,35 +50,7 @@ fun HomeListingScreen(
     }
 }
 
-@Composable
-fun FavoriteListingScreen(
-    onItemClick: (post: NewsList) -> Unit,
-    onBackClick: () -> Unit
-) {
-    val viewModel: HomeListingScreenViewModel = koinViewModel()
-    val state by viewModel.allPostState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.processIntent(PostIntent.LoadFavorites)
-    }
-
-    Scaffold(
-        topBar = {
-            CommonAppBar(
-                title = "Favorites",
-                onBackClick = onBackClick
-            )
-        }
-    ) { padding ->
-        NewsContent(
-            state = state,
-            onItemClick = onItemClick,
-            onFavoriteToggle = { post -> viewModel.processIntent(PostIntent.ToggleFavorite(post)) },
-            modifier = Modifier.padding(padding),
-            emptyMessage = "No favorites yet"
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,6 +60,8 @@ fun CommonAppBar(
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
+        modifier = Modifier.height(70.dp),
+        windowInsets = WindowInsets(0),
         title = { Text(title) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
