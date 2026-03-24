@@ -39,7 +39,6 @@ fun HomeDetailScreenComposable(details: NewsList, onBackPress: () -> Unit) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-
             Text(
                 text = details.title,
                 fontSize = 20.sp,
@@ -65,7 +64,7 @@ fun HomeDetailScreenComposable(details: NewsList, onBackPress: () -> Unit) {
             ) {
 
                 Text(
-                    text = details.author ?: "Unknown Author",
+                    text = details.author,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
